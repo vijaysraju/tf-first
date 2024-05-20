@@ -1,0 +1,28 @@
+name: Validate File Content
+ 
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+ 
+jobs:
+  validate-content:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+ 
+      - name: Search for "password" in text files
+        run: |
+          forbidden_word="password"
+          files_with_forbidden_word=$(grep -rl "$forbidden_word" . --exclude=validate-content.yml --exclude-dir=.git || echo "")
+      
+          if [ -n "$files_with_forbidden_word" ]; then
+            echo "Commit rejected: Found the word '$forbidden_word' in the following files:"
+            echo "$files_with_forbidden_word"
+            exit 1
+          else
+            echo "No files found with the forbidden word."
+          fi
